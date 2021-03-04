@@ -67,7 +67,37 @@ vector<int> LinuxParser::Pids() {
 }
 
 // TODO: Read and return the system memory utilization
-float LinuxParser::MemoryUtilization() { return 0.0; }
+float LinuxParser::MemoryUtilization() {
+    std::ifstream filestream(kProcDirectory + kMeminfoFilename);
+    // This calculates the same number as the green bar in htop.
+    // https://stackoverflow.com/a/41251290
+    std::vector<std::string> names{"MemTotal", "MemFree", "Buffers", "Cached", "SReclaimable", "Shmem"};
+    std::map<std::string, long long> values;
+
+    if (filestream.is_open()) {
+        std::string line;
+        while (std::getline(filestream, line)) {
+            std::stringstream ss;
+            ss << line;
+            std::string title, unit;
+            long long number;
+            if (ss >> title >> number >> unit) {
+                for (auto const& name : names) {
+                    if (title == (name + ":")) {
+                        values[name] = number;
+                    }
+                }
+            }
+
+        }
+    }
+    if (values.size() != names.size()) return 0.0;
+    long long totalUsedMemory = values["MemTotal"] - values["MemFree"];
+    long long cachedMemory = values["Cached"] + values["SReclaimable"] - values["Shmem"];
+    long long nonCacheBufferMemory = totalUsedMemory - (values["Buffers"] + cachedMemory);
+    return nonCacheBufferMemory / (float) values["MemTotal"];
+}
+
 
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { return 0; }

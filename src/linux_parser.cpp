@@ -68,36 +68,37 @@ vector<int> LinuxParser::Pids() {
 
 // TODO: Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() {
-    std::ifstream filestream(kProcDirectory + kMeminfoFilename);
-    // This calculates the same number as the green bar in htop.
-    // https://stackoverflow.com/a/41251290
-    std::vector<std::string> names{"MemTotal", "MemFree", "Buffers", "Cached", "SReclaimable", "Shmem"};
-    std::map<std::string, long long> values;
+  std::ifstream filestream(kProcDirectory + kMeminfoFilename);
+  // This calculates the same number as the green bar in htop.
+  // https://stackoverflow.com/a/41251290
+  std::vector<std::string> names{"MemTotal", "MemFree",      "Buffers",
+                                 "Cached",   "SReclaimable", "Shmem"};
+  std::map<std::string, long long> values;
 
-    if (filestream.is_open()) {
-        std::string line;
-        while (std::getline(filestream, line)) {
-            std::stringstream ss;
-            ss << line;
-            std::string title, unit;
-            long long number;
-            if (ss >> title >> number >> unit) {
-                for (auto const& name : names) {
-                    if (title == (name + ":")) {
-                        values[name] = number;
-                    }
-                }
-            }
-
+  if (filestream.is_open()) {
+    std::string line;
+    while (std::getline(filestream, line)) {
+      std::stringstream ss;
+      ss << line;
+      std::string title, unit;
+      long long number;
+      if (ss >> title >> number >> unit) {
+        for (auto const& name : names) {
+          if (title == (name + ":")) {
+            values[name] = number;
+          }
         }
+      }
     }
-    if (values.size() != names.size()) return 0.0;
-    long long totalUsedMemory = values["MemTotal"] - values["MemFree"];
-    long long cachedMemory = values["Cached"] + values["SReclaimable"] - values["Shmem"];
-    long long nonCacheBufferMemory = totalUsedMemory - (values["Buffers"] + cachedMemory);
-    return nonCacheBufferMemory / (float) values["MemTotal"];
+  }
+  if (values.size() != names.size()) return 0.0;
+  long long totalUsedMemory = values["MemTotal"] - values["MemFree"];
+  long long cachedMemory =
+      values["Cached"] + values["SReclaimable"] - values["Shmem"];
+  long long nonCacheBufferMemory =
+      totalUsedMemory - (values["Buffers"] + cachedMemory);
+  return nonCacheBufferMemory / (float)values["MemTotal"];
 }
-
 
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { return 0; }
@@ -119,10 +120,36 @@ long LinuxParser::IdleJiffies() { return 0; }
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 // TODO: Read and return the total number of processes
-int LinuxParser::TotalProcesses() { return 0; }
+int LinuxParser::TotalProcesses() {
+  std::ifstream filestream(kProcDirectory + kStatFilename);
+  if (filestream.is_open()) {
+    std::string word;
+    while (filestream >> word) {
+      if (word == "processes") {
+        int n;
+        filestream >> n;
+        return n;
+      }
+    }
+  }
+  return -1;
+}
 
 // TODO: Read and return the number of running processes
-int LinuxParser::RunningProcesses() { return 0; }
+int LinuxParser::RunningProcesses() {
+  std::ifstream filestream(kProcDirectory + kStatFilename);
+  if (filestream.is_open()) {
+    std::string word;
+    while (filestream >> word) {
+      if (word == "procs_running") {
+        int n = -1;
+        filestream >> n;
+        return n;
+      }
+    }
+  }
+  return -1;
+}
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function

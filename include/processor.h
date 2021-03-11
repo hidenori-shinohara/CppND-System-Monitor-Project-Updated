@@ -7,7 +7,7 @@
 class Processor {
  public:
   Processor();
-  Processor(std::vector<std::string>);
+  void refresh();
   float Utilization();  // TODO: See src/processor.cpp
 
  private:

@@ -16,7 +16,8 @@ using std::vector;
 
 Processor::Processor() {}
 
-Processor::Processor(std::vector<string> stringVec) {
+void Processor::refresh() {
+ std::vector<string> const& stringVec = LinuxParser::CpuUtilization();
   for (auto const& s : stringVec) {
     long val = 0;
     for (auto const& ch : s) {
@@ -31,7 +32,7 @@ void System::refresh() {
      for (auto pid : pids) {
          processes_.push_back(Process(pid));
      }
-     cpu_ = Processor(LinuxParser::CpuUtilization());
+     cpu_.refresh();
 }
 
 // TODO: Return the system's CPU

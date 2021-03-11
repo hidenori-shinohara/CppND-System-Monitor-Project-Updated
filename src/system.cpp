@@ -17,7 +17,7 @@ using std::vector;
 Processor::Processor() {}
 
 void Processor::refresh() {
- std::vector<string> const& stringVec = LinuxParser::CpuUtilization();
+  std::vector<string> const& stringVec = LinuxParser::CpuUtilization();
   for (auto const& s : stringVec) {
     long val = 0;
     for (auto const& ch : s) {
@@ -28,22 +28,18 @@ void Processor::refresh() {
 }
 
 void System::refresh() {
-     std::vector<int> const& pids = LinuxParser::Pids();
-     for (auto pid : pids) {
-         processes_.push_back(Process(pid));
-     }
-     cpu_.refresh();
+  std::vector<int> const& pids = LinuxParser::Pids();
+  for (auto pid : pids) {
+    processes_.push_back(Process(pid));
+  }
+  cpu_.refresh();
 }
 
 // TODO: Return the system's CPU
-Processor& System::Cpu() {
-  return cpu_;
-}
+Processor& System::Cpu() { return cpu_; }
 
 // TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() {
-    return processes_;
-}
+vector<Process>& System::Processes() { return processes_; }
 
 // TODO: Return the system's kernel identifier (string)
 std::string System::Kernel() { return LinuxParser::Kernel(); }

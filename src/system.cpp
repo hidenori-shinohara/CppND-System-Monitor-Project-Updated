@@ -17,24 +17,13 @@ using std::vector;
 Processor::Processor() {}
 
 Processor::Processor(std::vector<string> stringVec) {
-  std::vector<long> cpuUtilization;
   for (auto const& s : stringVec) {
     long val = 0;
     for (auto const& ch : s) {
       val = 10 * val + (ch - '0');
     }
-    cpuUtilization.push_back(val);
+    data.push_back(val);
   }
-  user = cpuUtilization[0];
-  nice = cpuUtilization[1];
-  system = cpuUtilization[2];
-  idle = cpuUtilization[3];
-  iowait = cpuUtilization[4];
-  irq = cpuUtilization[5];
-  softirq = cpuUtilization[6];
-  steal = cpuUtilization[7];
-  guest = cpuUtilization[8];
-  guest_nice = cpuUtilization[7];
 }
 
 // TODO: Return the system's CPU

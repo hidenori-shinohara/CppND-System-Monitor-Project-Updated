@@ -11,6 +11,6 @@ class Processor {
   float Utilization();  // TODO: See src/processor.cpp
 
  private:
-  long user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
+  std::vector<long> data;
 };
 #endif

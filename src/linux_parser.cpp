@@ -131,9 +131,9 @@ vector<string> LinuxParser::ProcessLevelCpuUtilization(int pid) {
   vector<string> v;
   if (filestream.is_open()) {
     for (int i = 0; i < 30; i++) {
-        std::string s;
-        filestream >> s;
-        v.push_back(s);
+      std::string s;
+      filestream >> s;
+      v.push_back(s);
     }
   }
   return v;
@@ -214,10 +214,10 @@ string LinuxParser::Ram(int pid) {
   if (filestream.is_open()) {
     std::string result;
     while (filestream >> result) {
-        if (result == "VmSize:") {
-            filestream >> result;
-            return result;
-        }
+      if (result == "VmSize:") {
+        filestream >> result;
+        return result;
+      }
     }
   }
   return "0";
@@ -232,10 +232,10 @@ string LinuxParser::Uid(int pid) {
   if (filestream.is_open()) {
     std::string result;
     while (filestream >> result) {
-        if (result == "Uid:") {
-            filestream >> result;
-            return result;
-        }
+      if (result == "Uid:") {
+        filestream >> result;
+        return result;
+      }
     }
   }
   return "Error: No Uid found";
@@ -244,23 +244,23 @@ string LinuxParser::Uid(int pid) {
 // TODO: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::User(int pid) {
-    std::ifstream filestream(kPasswordPath);
-    string expectedUid = LinuxParser::Uid(pid);
-    if (filestream.is_open()) {
-        std::string line;
-        while (std::getline(filestream, line)) {
-            std::stringstream liness;
-            for (int i = 0; i < (int) line.size(); i++) {
-                liness << (line[i] == ':' ? ' ' : line[i]);
-            }
-            std::string user, garbage, uid;
-            liness >> user >> garbage >> uid;
-            if (uid == expectedUid) {
-                return user;
-            }
-        }
+  std::ifstream filestream(kPasswordPath);
+  string expectedUid = LinuxParser::Uid(pid);
+  if (filestream.is_open()) {
+    std::string line;
+    while (std::getline(filestream, line)) {
+      std::stringstream liness;
+      for (int i = 0; i < (int)line.size(); i++) {
+        liness << (line[i] == ':' ? ' ' : line[i]);
+      }
+      std::string user, garbage, uid;
+      liness >> user >> garbage >> uid;
+      if (uid == expectedUid) {
+        return user;
+      }
     }
-    return "Error: No Uid found";
+  }
+  return "Error: No Uid found";
 }
 
 // TODO: Read and return the uptime of a process

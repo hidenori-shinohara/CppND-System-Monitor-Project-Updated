@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <unistd.h>
 
 #include "linux_parser.h"
 #include "process.h"
@@ -49,7 +50,10 @@ string Process::Ram() {
 string Process::User() { return LinuxParser::User(pid); }
 
 // TODO: Return the age of this process (in seconds)
-long int Process::UpTime() { return 0; }
+long int Process::UpTime() {
+    long uptime = LinuxParser::UpTime();
+    return uptime / sysconf(_SC_CLK_TCK);
+}
 
 // TODO: Overload the "less than" comparison operator for Process objects
 // REMOVE: [[maybe_unused]] once you define the function

@@ -1,11 +1,9 @@
 #include <unistd.h>
+#include <cassert>
 #include <cctype>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <cassert>
-
-#define db(x) {std::cout << #x << " = " << (x) << std::endl;}
 
 #include "linux_parser.h"
 #include "process.h"
@@ -14,8 +12,10 @@ using std::string;
 using std::to_string;
 using std::vector;
 
-Process::Process(): last_total_time(0), last_seconds(0) {}
-Process::Process(int p) : pid(p), last_total_time(0), last_seconds(0) { refresh(); }
+Process::Process() : last_total_time(0), last_seconds(0) {}
+Process::Process(int p) : pid(p), last_total_time(0), last_seconds(0) {
+  refresh();
+}
 
 float parse(std::string s) {
   std::stringstream ss;
@@ -30,7 +30,7 @@ float parse(std::string s) {
 void Process::refresh() {
   {
     vector<string> const& cpu = LinuxParser::ReadStatFile(pid);
-    if (cpu.empty()) return; // this process is dead.
+    if (cpu.empty()) return;  // this process is dead.
     using namespace LinuxParser;
     long double system_uptime = LinuxParser::UpTime();
     long double utime = parse(cpu[kUtime_ - 1]);
@@ -44,20 +44,19 @@ void Process::refresh() {
     total_time = total_time + cutime + cstime;
     long double seconds = system_uptime - (starttime / hertz);
     if (last_seconds < 1e-6) {
-        last_seconds = seconds;
-        last_total_time = total_time;
-        cpuUtilization = 0;
+      last_seconds = seconds;
+      last_total_time = total_time;
+      cpuUtilization = 0;
     } else if (seconds - last_seconds > 1) {
-        long double total_time_diff = total_time - last_total_time;
-        float seconds_diff = seconds - last_seconds;
-        last_total_time = total_time;
-        last_seconds = seconds;
-        cpuUtilization = (total_time_diff / hertz) / seconds_diff;
+      long double total_time_diff = total_time - last_total_time;
+      float seconds_diff = seconds - last_seconds;
+      last_total_time = total_time;
+      last_seconds = seconds;
+      cpuUtilization = (total_time_diff / hertz) / seconds_diff;
     }
   }
 
   { uptime = LinuxParser::UpTime(pid); }
-
 
   { command = LinuxParser::Command(pid); }
 

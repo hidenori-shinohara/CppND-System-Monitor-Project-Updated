@@ -55,7 +55,7 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
 void NCursesDisplay::DisplayProcesses(std::vector<Process>& processes,
                                       WINDOW* window, int n) {
   int row{0};
-  // Updated some column widths becauses
+  // Updated some column widths because
   // 1. Some PIDs on my computer are 7 digits.
   // 2. My user name is "hidenori" which is 8 letters.
   //    many processes showed up as "hidenor" which was confusing.

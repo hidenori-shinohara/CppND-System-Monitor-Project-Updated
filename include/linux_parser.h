@@ -45,7 +45,6 @@ enum CPUStates {
 
 // CPU per process
 enum ProcessLevelCPUStates {
-  kUptime_ = 0,
   kUtime_ = 14,
   kStime_ = 15,
   kCutime_ = 16,

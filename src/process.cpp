@@ -3,6 +3,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cassert>
+
+#define db(x) {std::cout << #x << " = " << (x) << std::endl;}
 
 #include "linux_parser.h"
 #include "process.h"
@@ -11,7 +14,8 @@ using std::string;
 using std::to_string;
 using std::vector;
 
-Process::Process(int p) : pid(p) { refresh(); }
+Process::Process(): last_total_time(0), last_seconds(0) {}
+Process::Process(int p) : pid(p), last_total_time(0), last_seconds(0) { refresh(); }
 
 float parse(std::string s) {
   std::stringstream ss;
@@ -25,21 +29,34 @@ float parse(std::string s) {
 
 void Process::refresh() {
   {
-    vector<string> const& cpu = LinuxParser::ProcessLevelCpuUtilization(pid);
+    vector<string> const& cpu = LinuxParser::ReadStatFile(pid);
     using namespace LinuxParser;
-    float uptime = parse(cpu[kUptime_]);
-    float utime = parse(cpu[kUtime_]);
-    float stime = parse(cpu[kStime_]);
-    float cutime = parse(cpu[kCutime_]);
-    float cstime = parse(cpu[kCstime_]);
-    float starttime = parse(cpu[kStarttime_]);
-    float hertz = sysconf(_SC_CLK_TCK);
+    long double system_uptime = LinuxParser::UpTime();
+    long double utime = parse(cpu[kUtime_ - 1]);
+    long double stime = parse(cpu[kStime_ - 1]);
+    long double cutime = parse(cpu[kCutime_ - 1]);
+    long double cstime = parse(cpu[kCstime_ - 1]);
+    long double starttime = parse(cpu[kStarttime_ - 1]);
+    long double hertz = sysconf(_SC_CLK_TCK);
     // https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
-    float total_time = utime + stime;
+    long double total_time = utime + stime;
     total_time = total_time + cutime + cstime;
-    float seconds = uptime - (starttime / hertz);
-    cpuUtilization = std::max<float>(0, (total_time / hertz) / seconds);
+    long double seconds = system_uptime - (starttime / hertz);
+    if (last_seconds < 1e-6) {
+        last_seconds = seconds;
+        last_total_time = total_time;
+        cpuUtilization = 0;
+    } else if (seconds - last_seconds > 1) {
+        long double total_time_diff = total_time - last_total_time;
+        float seconds_diff = seconds - last_seconds;
+        last_total_time = total_time;
+        last_seconds = seconds;
+        cpuUtilization = (total_time_diff / hertz) / seconds_diff;
+    }
   }
+
+  { uptime = LinuxParser::UpTime(pid); }
+
 
   { command = LinuxParser::Command(pid); }
 
@@ -50,8 +67,6 @@ void Process::refresh() {
   }
 
   { user = LinuxParser::User(pid); }
-
-  { uptime = LinuxParser::UpTime(pid); }
 }
 
 // TODO: Return this process's ID

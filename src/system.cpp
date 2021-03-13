@@ -28,10 +28,21 @@ void Processor::refresh() {
 }
 
 void System::refresh() {
+  std::map<int, Process> processMap;
+  for (auto process : processes_) {
+      processMap[process.Pid()] = process;
+  }
   processes_.clear();
   std::vector<int> const& pids = LinuxParser::Pids();
   for (auto pid : pids) {
-    processes_.push_back(Process(pid));
+    if (processMap.find(pid) != processMap.end()) {
+        processes_.push_back(processMap[pid]);
+    } else {
+        processes_.push_back(Process(pid));
+    }
+  }
+  for (auto& process : processes_) {
+      process.refresh();
   }
   std::sort(processes_.begin(), processes_.end());
   std::reverse(processes_.begin(), processes_.end());

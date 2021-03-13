@@ -218,7 +218,7 @@ string LinuxParser::Command(int pid) {
   if (filestream.is_open()) {
     std::string result;
     std::getline(filestream, result);
-    if (result.empty()) result = "No Command";
+    if (result.empty()) return "No Command";
     return result;
   }
   return "No command info found";

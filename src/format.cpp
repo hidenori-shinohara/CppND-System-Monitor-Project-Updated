@@ -1,13 +1,12 @@
-#include <sstream>
 #include <cassert>
+#include <sstream>
 #include <string>
 
 #include "format.h"
 
 using std::string;
 
-
-#include<iostream>
+#include <iostream>
 // TODO: Complete this helper function
 // INPUT: Long int measuring seconds
 // OUTPUT: HH:MM:SS

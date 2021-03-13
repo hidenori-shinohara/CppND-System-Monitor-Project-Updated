@@ -31,7 +31,7 @@ float Process::CpuUtilization() {
   float total_time = utime + stime;
   total_time = total_time + cutime + cstime;
   float seconds = uptime - (starttime / hertz);
-  return (total_time / hertz) / seconds;
+  return std::max<float>(0, (total_time / hertz) / seconds);
 }
 
 // TODO: Return the command that generated this process

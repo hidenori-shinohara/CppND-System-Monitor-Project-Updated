@@ -28,10 +28,13 @@ void Processor::refresh() {
 }
 
 void System::refresh() {
+  processes_.clear();
   std::vector<int> const& pids = LinuxParser::Pids();
   for (auto pid : pids) {
     processes_.push_back(Process(pid));
   }
+  std::sort(processes_.begin(), processes_.end());
+  std::reverse(processes_.begin(), processes_.end());
   cpu_.refresh();
 }
 

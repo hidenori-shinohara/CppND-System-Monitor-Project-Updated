@@ -100,15 +100,15 @@ float LinuxParser::MemoryUtilization() {
   return nonCacheBufferMemory / (float)values["MemTotal"];
 }
 
+#include<iostream>
+#include<cassert>
+
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() {
-  std::ifstream filestream(kProcDirectory + kUptimeFilename);
-  if (filestream.is_open()) {
+    std::ifstream filestream(kProcDirectory + kUptimeFilename);
     float totalUptime, idleTime;
     filestream >> totalUptime >> idleTime;
-    return (long)totalUptime;
-  }
-  return -1;
+    return (long) totalUptime;
 }
 
 // TODO: Read and return the number of jiffies for the system

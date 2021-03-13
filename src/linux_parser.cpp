@@ -124,19 +124,38 @@ long LinuxParser::ActiveJiffies() { return 0; }
 // TODO: Read and return the number of idle jiffies for the system
 long LinuxParser::IdleJiffies() { return 0; }
 
-vector<string> LinuxParser::ProcessLevelCpuUtilization(int pid) {
+vector<string> LinuxParser::ReadStatFile(int pid) {
   std::stringstream ss;
-  ss << kProcDirectory << pid << kStatFilename;
+  ss << LinuxParser::kProcDirectory << pid << LinuxParser::kStatFilename;
   std::ifstream filestream(ss.str());
-  vector<string> v;
-  if (filestream.is_open()) {
-    for (int i = 0; i < 30; i++) {
-      std::string s;
-      filestream >> s;
-      v.push_back(s);
+  std::string line;
+  std::getline(filestream, line);
+  std::stringstream content;
+  for (int i = 0; i < (int)line.size(); i++) {
+    content << line[i];
+    if (line[i] == '(') {
+      int cnt = 0;
+      for (; i < (int)line.size(); i++) {
+        if (line[i] == '(') {
+          cnt++;
+        }
+        if (line[i] == ')') {
+          cnt--;
+          if (cnt == 0) break;
+        }
+      }
     }
   }
-  return v;
+  vector<string> ret;
+  std::string result;
+  while (content >> result) {
+    ret.push_back(result);
+  }
+  return ret;
+}
+
+vector<string> LinuxParser::ProcessLevelCpuUtilization(int pid) {
+  return LinuxParser::ReadStatFile(pid);
 }
 
 // TODO: Read and return CPU utilization
@@ -266,35 +285,13 @@ string LinuxParser::User(int pid) {
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid) {
-  std::stringstream ss;
-  ss << kProcDirectory << pid << kStatFilename;
-  std::ifstream filestream(ss.str());
-  long totalUptime = LinuxParser::UpTime();
-  if (filestream.is_open()) {
-    std::string line;
-    std::getline(filestream, line);
-    int cnt = 0;
-    for (int i = 0; i < (int)line.size(); i++) {
-      if (line[i] == '(') cnt++;
-      if (line[i] == ')') {
-        cnt--;
-        if (cnt == 0) {
-          i++;
-          std::stringstream content;
-          while (i < (int)line.size()) {
-            content << line[i];
-            i++;
-          }
-          std::string result;
-          for (i = 0; i < 19; i++) {
-            content >> result;
-          }
-          long starttime;
-          content >> starttime;
-          return totalUptime - starttime / sysconf(_SC_CLK_TCK);
-        }
-      }
-    }
+  vector<string> v = LinuxParser::ReadStatFile(pid);
+  long starttime;
+  {
+    std::stringstream ss;
+    ss << v[21];
+    ss >> starttime;
   }
-  return -1;
+  long totalUptime = LinuxParser::UpTime();
+  return totalUptime - starttime / sysconf(_SC_CLK_TCK);
 }

@@ -30,6 +30,7 @@ float parse(std::string s) {
 void Process::refresh() {
   {
     vector<string> const& cpu = LinuxParser::ReadStatFile(pid);
+    if (cpu.empty()) return; // this process is dead.
     using namespace LinuxParser;
     long double system_uptime = LinuxParser::UpTime();
     long double utime = parse(cpu[kUtime_ - 1]);

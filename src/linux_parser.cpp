@@ -269,14 +269,32 @@ long LinuxParser::UpTime(int pid) {
   std::stringstream ss;
   ss << kProcDirectory << pid << kStatFilename;
   std::ifstream filestream(ss.str());
+  long totalUptime = LinuxParser::UpTime();
   if (filestream.is_open()) {
-    std::string result;
-    for (int i = 0; i < 21; i++) {
-      filestream >> result;
+    std::string line;
+    std::getline(filestream, line);
+    int cnt = 0;
+    for (int i = 0; i < (int)line.size(); i++) {
+      if (line[i] == '(') cnt++;
+      if (line[i] == ')') {
+        cnt--;
+        if (cnt == 0) {
+          i++;
+          std::stringstream content;
+          while (i < (int)line.size()) {
+            content << line[i];
+            i++;
+          }
+          std::string result;
+          for (i = 0; i < 19; i++) {
+            content >> result;
+          }
+          long starttime;
+          content >> starttime;
+          return totalUptime - starttime / sysconf(_SC_CLK_TCK);
+        }
+      }
     }
-    long x;
-    filestream >> x;
-    return x;
   }
   return -1;
 }

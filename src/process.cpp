@@ -21,6 +21,8 @@ float parse(std::string s) {
   return a;
 }
 
+#include <iostream>
+
 void Process::refresh() {
   {
     vector<string> const& cpu = LinuxParser::ProcessLevelCpuUtilization(pid);
@@ -49,26 +51,26 @@ void Process::refresh() {
 
   { user = LinuxParser::User(pid); }
 
-  { uptime = LinuxParser::UpTime(pid) / sysconf(_SC_CLK_TCK); }
+  { uptime = LinuxParser::UpTime(pid); }
 }
 
 // TODO: Return this process's ID
-int Process::Pid() { return pid; }
+int Process::Pid() const { return pid; }
 
 // TODO: Return this process's CPU utilization
 float Process::CpuUtilization() const { return cpuUtilization; }
 
 // TODO: Return the command that generated this process
-string Process::Command() { return command; }
+string Process::Command() const { return command; }
 
 // TODO: Return this process's memory utilization
-string Process::Ram() { return ram; }
+string Process::Ram() const { return ram; }
 
 // TODO: Return the user (name) that generated this process
-string Process::User() { return user; }
+string Process::User() const { return user; }
 
 // TODO: Return the age of this process (in seconds)
-long int Process::UpTime() { return uptime; }
+long int Process::UpTime() const { return uptime; }
 
 // TODO: Overload the "less than" comparison operator for Process objects
 // REMOVE: [[maybe_unused]] once you define the function

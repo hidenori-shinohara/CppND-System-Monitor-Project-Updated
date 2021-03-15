@@ -29,9 +29,9 @@ float parse(std::string s) {
 
 void Process::refresh() {
   {
-    vector<string> const& cpu = LinuxParser::ReadStatFile(pid);
-    if (cpu.empty()) return;  // this process is dead.
     using namespace LinuxParser;
+    vector<string> const& cpu = LinuxParser::ReadStatFile(pid);
+    if (cpu.size() < kStarttime_) return;  // this process is dead.
     long double system_uptime = LinuxParser::UpTime();
     long double utime = parse(cpu[kUtime_ - 1]);
     long double stime = parse(cpu[kStime_ - 1]);
@@ -43,7 +43,7 @@ void Process::refresh() {
     long double total_time = utime + stime;
     total_time = total_time + cutime + cstime;
     long double seconds = system_uptime - (starttime / hertz);
-    if (last_seconds < 1e-6) {
+    if (last_seconds < 1) {
       last_seconds = seconds;
       last_total_time = total_time;
       cpuUtilization = 0;

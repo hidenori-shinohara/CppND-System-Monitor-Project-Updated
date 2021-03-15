@@ -30,7 +30,7 @@ string LinuxParser::OperatingSystem() {
       }
     }
   }
-  return value;
+  return "No OS info Found";
 }
 
 // DONE: An example of how to read data from the filesystem
@@ -41,9 +41,11 @@ string LinuxParser::Kernel() {
   if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);
-    linestream >> os >> version >> kernel;
+    if (linestream >> os >> version >> kernel) {
+      return kernel;
+    }
   }
-  return kernel;
+  return "No kernel info found";
 }
 
 // BONUS: Update this to use std::filesystem
@@ -100,15 +102,14 @@ float LinuxParser::MemoryUtilization() {
   return nonCacheBufferMemory / (float)values["MemTotal"];
 }
 
-#include <cassert>
-#include <iostream>
-
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() {
   std::ifstream filestream(kProcDirectory + kUptimeFilename);
   float totalUptime, idleTime;
-  filestream >> totalUptime >> idleTime;
-  return (long)totalUptime;
+  if (filestream >> totalUptime >> idleTime) {
+    return (long)totalUptime;
+  }
+  return 0;
 }
 
 // TODO: Read and return the number of jiffies for the system
@@ -168,7 +169,9 @@ vector<string> LinuxParser::CpuUtilization() {
         vector<string> v(10);
         for (int i = 0; i < 10; i++) {
           v.push_back("");
-          filestream >> v[i];
+          if (!(filestream >> v[i])) {
+            return {};
+          }
         }
         return v;
       }
@@ -185,8 +188,11 @@ int LinuxParser::TotalProcesses() {
     while (filestream >> word) {
       if (word == "processes") {
         int n;
-        filestream >> n;
-        return n;
+        if (filestream >> n) {
+          return n;
+        } else {
+          return -1;
+        }
       }
     }
   }
@@ -286,6 +292,9 @@ string LinuxParser::User(int pid) {
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid) {
   vector<string> v = LinuxParser::ReadStatFile(pid);
+  if (v.size() < 22) {
+    return -1;
+  }
   long starttime;
   {
     std::stringstream ss;

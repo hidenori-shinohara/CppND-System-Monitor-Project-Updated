@@ -3,6 +3,9 @@
 
 // TODO: Return the aggregate CPU utilization
 float Processor::Utilization() {
+  if (data.size() < LinuxParser::CPUStates::kGuestNice_) {
+    return -1;
+  }
   // https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux
   // Guest time is already accounted in usertime
   long user = data[LinuxParser::CPUStates::kUser_];

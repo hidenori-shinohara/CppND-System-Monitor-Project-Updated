@@ -14,8 +14,6 @@ using std::size_t;
 using std::string;
 using std::vector;
 
-Processor::Processor() {}
-
 #include <iostream>
 
 void System::refresh() {

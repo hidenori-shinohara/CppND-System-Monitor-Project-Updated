@@ -1,6 +1,8 @@
 #include "processor.h"
 #include "linux_parser.h"
 
+Processor::Processor() {}
+
 long getNonIdle(std::vector<long> const& data) {
   long user = data[LinuxParser::CPUStats::kUser_];
   long nice = data[LinuxParser::CPUStats::kNice_];

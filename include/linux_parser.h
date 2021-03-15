@@ -30,7 +30,7 @@ std::string Kernel();
 std::vector<std::string> ReadStatFile(int pid);
 
 // CPU
-enum CPUStates {
+enum CPUStats {
   kUser_ = 0,
   kNice_,
   kSystem_,

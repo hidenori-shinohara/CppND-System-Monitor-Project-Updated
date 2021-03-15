@@ -11,6 +11,7 @@ class Processor {
   float Utilization();  // TODO: See src/processor.cpp
 
  private:
-  std::vector<long> data;
+  std::vector<long> prevData;
+  float utilization;
 };
 #endif

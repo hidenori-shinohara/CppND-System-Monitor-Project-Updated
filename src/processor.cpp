@@ -1,28 +1,68 @@
 #include "processor.h"
 #include "linux_parser.h"
 
-// TODO: Return the aggregate CPU utilization
-float Processor::Utilization() {
-  if (data.size() < LinuxParser::CPUStates::kGuestNice_) {
-    return -1;
-  }
-  // https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux
-  // Guest time is already accounted in usertime
-  long user = data[LinuxParser::CPUStates::kUser_];
-  long nice = data[LinuxParser::CPUStates::kNice_];
-  long system = data[LinuxParser::CPUStates::kSystem_];
-  long idle = data[LinuxParser::CPUStates::kIdle_];
-  long iowait = data[LinuxParser::CPUStates::kIOwait_];
-  long irq = data[LinuxParser::CPUStates::kIRQ_];
-  long softirq = data[LinuxParser::CPUStates::kSoftIRQ_];
-  long steal = data[LinuxParser::CPUStates::kSteal_];
-  long guest = data[LinuxParser::CPUStates::kGuest_];
-  long guestnice = data[LinuxParser::CPUStates::kGuestNice_];
+long getNonIdle(std::vector<long> const& data) {
+  long user = data[LinuxParser::CPUStats::kUser_];
+  long nice = data[LinuxParser::CPUStats::kNice_];
+  long system = data[LinuxParser::CPUStats::kSystem_];
+  long irq = data[LinuxParser::CPUStats::kIRQ_];
+  long softirq = data[LinuxParser::CPUStats::kSoftIRQ_];
+  long steal = data[LinuxParser::CPUStats::kSteal_];
+  long guest = data[LinuxParser::CPUStats::kGuest_];
+  long guestnice = data[LinuxParser::CPUStats::kGuestNice_];
   user = user - guest;
   nice = nice - guestnice;
-  long long idleall = idle + iowait;
-  long long systemall = system + irq + softirq;
-  long long virtall = guest + guestnice;
-  long long total = user + nice + systemall + idleall + steal + virtall;
-  return (total - idleall) / (float)total;
+  return user + nice + system + irq + softirq + steal;
 }
+
+long getIdle(std::vector<long> const& data) {
+  long user = data[LinuxParser::CPUStats::kUser_];
+  long nice = data[LinuxParser::CPUStats::kNice_];
+  long idle = data[LinuxParser::CPUStats::kIdle_];
+  long iowait = data[LinuxParser::CPUStats::kIOwait_];
+  long guest = data[LinuxParser::CPUStats::kGuest_];
+  long guestnice = data[LinuxParser::CPUStats::kGuestNice_];
+  user = user - guest;
+  nice = nice - guestnice;
+  return idle + iowait;
+}
+
+void Processor::refresh() {
+  std::vector<std::string> const& stringVec = LinuxParser::CpuUtilization();
+  std::vector<long> data;
+  for (auto const& s : stringVec) {
+    long val = 0;
+    for (auto const& ch : s) {
+      val = 10 * val + (ch - '0');
+    }
+    data.push_back(val);
+  }
+  if (data.size() < LinuxParser::CPUStats::kGuestNice_) {
+    return;
+  }
+  if (prevData.size() < LinuxParser::CPUStats::kGuestNice_) {
+    prevData = data;
+    utilization = 0;
+    return;
+  }
+  long prevIdle = getIdle(prevData);
+  long idle = getIdle(data);
+
+  long prevNonIdle = getNonIdle(prevData);
+  long nonIdle = getNonIdle(data);
+
+  long prevTotal = prevIdle + prevNonIdle;
+  long total = idle + nonIdle;
+
+  long totald = total - prevTotal;
+  long idled = idle - prevIdle;
+
+  if (totald < 1) return;
+
+  utilization = (totald - idled) / (float)totald;
+
+  prevData = data;
+}
+
+// TODO: Return the aggregate CPU utilization
+float Processor::Utilization() { return utilization; }

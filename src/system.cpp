@@ -16,16 +16,7 @@ using std::vector;
 
 Processor::Processor() {}
 
-void Processor::refresh() {
-  std::vector<string> const& stringVec = LinuxParser::CpuUtilization();
-  for (auto const& s : stringVec) {
-    long val = 0;
-    for (auto const& ch : s) {
-      val = 10 * val + (ch - '0');
-    }
-    data.push_back(val);
-  }
-}
+#include <iostream>
 
 void System::refresh() {
   std::map<int, Process> processMap;

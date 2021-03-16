@@ -8,7 +8,7 @@ class Processor {
  public:
   Processor();
   void refresh();
-  float Utilization();  // TODO: See src/processor.cpp
+  float Utilization();
 
  private:
   std::vector<long> prevData;
